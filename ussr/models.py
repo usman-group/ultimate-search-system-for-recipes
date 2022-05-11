@@ -1,24 +1,31 @@
 from statistics import mode
+from tabnanny import verbose
 from django.db import models
 from django.contrib.auth.models import User as BaseUser
 '''Чекайте модель базы данных, которую делал Артём (важная заметочка)'''
 
 class User(BaseUser):
-    level = models.CharField() # Чекайте систему рангов
+    level = models.CharField('Уровень пользователя', max_length=255) # Чекайте систему рангов
 
 
 class Ingredient(models.Model):
     name = models.CharField(max_length=255)
-    calories = models.IntegerField(blank=True)
-    proteins = models.IntegerField(blank=True)
-    fats = models.IntegerField(blank=True)
-    carbohydrates = models.IntegerField(blank=True)
+    calories = models.FloatField(blank=True)
+    proteins = models.FloatField(blank=True)
+    fats = models.FloatField(blank=True)
+    carbohydrates = models.FloatField(blank=True)
     type = models.CharField(max_length=255, blank=True)
     type_is_required = models.BooleanField(default=False)
+
+    def __str__(self) -> str:
+        return self.get_full_name()
 
     def get_full_name(self):
         return self.name + self.type if self.type is not None else self.name
 
+    class Meta:
+        verbose_name = 'ингредиент'
+        verbose_name_plural = 'ингредиенты'
 
 class Recipe(models.Model):
     name = models.CharField('Название рецепта', max_length=255)
@@ -35,7 +42,7 @@ class Recipe(models.Model):
 
 class Review(models.Model):
     recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.SET_NULL)
+    user_id = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True)
     text = models.TextField('Текст отзыва')
     create_datetime = models.DateTimeField('Время создания', auto_now_add=True)
     # rate = models.ManyToManyField(User)
@@ -49,8 +56,7 @@ class Bookmarks(models.Model):
 
 
 class Composition(models.Model):
-    recipe_id = models.ForeignKey(Recipe)
-    ingredient = models.ForeignKey(Ingredient)
+    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.SET_NULL, blank=True, null=True)
     volume = models.CharField('Количество/Вес', max_length=255, blank=True)
     is_required = models.BooleanField('Обязательный')
-    
