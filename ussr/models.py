@@ -45,7 +45,7 @@ class Review(models.Model):
     text = models.TextField('текст отзыва')
     create_datetime = models.DateTimeField('время создания', auto_now_add=True)
     # rate = models.ManyToManyField(User)
-    # TODO: Узнать как тут нормально реализовать многие ко многим
+    # TODO: Узнать как тут нормально реализовать многие ко многим и сделать
 
 
 class Bookmarks(models.Model):
