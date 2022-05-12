@@ -3,8 +3,7 @@ from .models import *
 
 
 class RecipeAdmin(admin.ModelAdmin):
-    readonly_fields=['create_datetime', 'last_edited_datetime', 'average_rate']
-
+    readonly_fields = ['create_datetime', 'last_edited_datetime', 'average_rate']
 
 
 admin.site.register(Composition)

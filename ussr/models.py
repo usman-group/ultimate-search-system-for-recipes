@@ -8,7 +8,7 @@ from django.contrib.auth.models import User as BaseUser
 
 
 class User(BaseUser):
-    level = models.CharField('Уровень пользователя', max_length=255) # Чекайте систему рангов
+    level = models.CharField('Уровень пользователя', max_length=255)  # Чекайте систему рангов
 
 
 class Ingredient(models.Model):
@@ -37,11 +37,13 @@ class Recipe(models.Model):
     photo = models.ImageField('фото рецепта', upload_to='recipes/images', blank=True)
     video = models.FileField('видео рецепта', upload_to='recipes/videos', blank=True)
     country = models.CharField('страна происхождения рецепта', max_length=255, blank=True)
-    type = models.CharField('тип блюда', max_length=255) # Such as Борщи, Амогусы
-    cooking_type = models.CharField('тип приготовления', max_length=255) # Such as Жарка, Варка TODO: выяснить: нужно ли это вообще
+    type = models.CharField('тип блюда', max_length=255)  # Such as Борщи, Амогусы
+    # TODO: Выяснить нужно ли поле cooking_type (Салаты всегда салаты, а борщи всегда варить)
+    cooking_type = models.CharField('тип приготовления', max_length=255)  # Such as Жарка, Варка
     create_datetime = models.DateTimeField('время создания', auto_now_add=True)
     last_edited_datetime = models.DateTimeField('время последнего изменения', auto_now=True)
-    average_rate = models.PositiveSmallIntegerField('средняя оценка', validators=[validators.MaxValueValidator(10)], null=True, blank=True)
+    average_rate = models.PositiveSmallIntegerField(
+        'средняя оценка', validators=[validators.MaxValueValidator(10)], null=True, blank=True)
 
     def __str__(self) -> str:
         return self.name
@@ -53,10 +55,14 @@ class Recipe(models.Model):
 
 class Review(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='рецепт, на который был оставлен коммент')
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='пользователь, оставивший отзыв')
+    user = models.ForeignKey(
+        User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='пользователь, оставивший отзыв'
+    )
     text = models.TextField('текст отзыва')
     create_datetime = models.DateTimeField('время создания', auto_now_add=True)
-    average_rate = models.PositiveIntegerField('средняя оценка отзыва', validators=[validators.MaxValueValidator(10)], null=True, blank=True)
+    average_rate = models.PositiveIntegerField(
+        'средняя оценка отзыва', validators=[validators.MaxValueValidator(10)], null=True, blank=True
+    )
 
     class Meta:
         verbose_name = 'отзыв'
@@ -66,7 +72,9 @@ class Review(models.Model):
 class ReviewRate(models.Model):
     review = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name='отзыв, на который поставлена оценка')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь, поставивший оценку')
-    average_rate = models.PositiveSmallIntegerField('оценка отзыва от 1 до 10', validators=[validators.MaxValueValidator(10)], null=True, blank=True)
+    average_rate = models.PositiveSmallIntegerField(
+        'оценка отзыва от 1 до 10', validators=[validators.MaxValueValidator(10)], null=True, blank=True
+    )
     
     class Meta:
         constraints = [
@@ -114,7 +122,9 @@ class Composition(models.Model):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['recipe_id', 'ingredient_id'], name='unique_recipeid-ingredientid_composition')
+            models.UniqueConstraint(
+                fields=['recipe_id', 'ingredient_id'], name='unique_recipeid-ingredientid_composition'
+            )
         ]
         verbose_name = 'состав'
         verbose_name_plural = 'составы'
