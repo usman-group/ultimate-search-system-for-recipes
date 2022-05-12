@@ -1,4 +1,3 @@
-from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
 from ussr.models import *
@@ -10,10 +9,10 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         fields = '__all__'
 
 
-class GroupSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Group
-        fields = '__all__'
+# class GroupSerializer(serializers.HyperlinkedModelSerializer):
+#     class Meta:
+#         model = Group
+#         fields = '__all__'
 
 
 class RecipeSerializer(serializers.ModelSerializer):
