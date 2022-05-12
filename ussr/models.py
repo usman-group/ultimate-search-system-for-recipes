@@ -23,7 +23,7 @@ class Ingredient(models.Model):
         return self.get_full_name()
 
     def get_full_name(self) -> str:
-        return self.name + self.type if self.type is not None else self.name
+        return f'{self.name} {self.type}' if self.type is not None else self.name
 
     class Meta:
         verbose_name = 'ингредиент'
@@ -33,7 +33,7 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     name = models.CharField('название рецепта', max_length=255)
     text = models.TextField('текст рецепта', max_length=10000)
-    cooking_time = models.TimeField('время готовки', default='00:05', blank=True)
+    cooking_time = models.TimeField('время готовки чч:мм:сс', default='00:05', blank=True)
     photo = models.ImageField('фото рецепта', upload_to='recipes/images', blank=True)
     video = models.FileField('видео рецепта', upload_to='recipes/videos', blank=True)
     country = models.CharField('страна происхождения рецепта', max_length=255, blank=True)
@@ -43,14 +43,17 @@ class Recipe(models.Model):
     last_edited_datetime = models.DateTimeField('время последнего изменения', auto_now=True)
     average_rate = models.PositiveSmallIntegerField('средняя оценка', validators=[validators.MaxValueValidator(10)], null=True, blank=True)
 
+    def __str__(self) -> str:
+        return self.name
+
     class Meta:
         verbose_name = 'рецептик'
         verbose_name_plural = 'рецептики'
 
 
 class Review(models.Model):
-    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='рецепт, на который был оставлен коммент')
-    user_id = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='пользователь, оставивший отзыв')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='рецепт, на который был оставлен коммент')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, verbose_name='пользователь, оставивший отзыв')
     text = models.TextField('текст отзыва')
     create_datetime = models.DateTimeField('время создания', auto_now_add=True)
     average_rate = models.PositiveIntegerField('средняя оценка отзыва', validators=[validators.MaxValueValidator(10)], null=True, blank=True)
@@ -61,9 +64,9 @@ class Review(models.Model):
 
 
 class ReviewRate(models.Model):
-    review_id = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name='отзыв, на который поставлена оценка')
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь, поставивший оценку')
-    average_rate = models.PositiveSmallIntegerField('оценка отзыва от 1 до 10', validators=[validators.MaxValueValidator(10)], default=0)
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, verbose_name='отзыв, на который поставлена оценка')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь, поставивший оценку')
+    average_rate = models.PositiveSmallIntegerField('оценка отзыва от 1 до 10', validators=[validators.MaxValueValidator(10)], null=True, blank=True)
     
     class Meta:
         constraints = [
@@ -74,8 +77,8 @@ class ReviewRate(models.Model):
 
 
 class RecipeRate(models.Model):
-    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='рецепт, на который поставлена оценка')
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь, поставивший оценку')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='рецепт, на который поставлена оценка')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='пользователь, поставивший оценку')
     rate = models.PositiveSmallIntegerField('оценка рецепта от 1 до 10', validators=[validators.MaxValueValidator(10)])
     
     class Meta:
@@ -87,8 +90,8 @@ class RecipeRate(models.Model):
 
 
 class Bookmarks(models.Model):
-    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
     create_datetime = models.DateTimeField('дата создания', auto_now_add=True)
     
     class Meta:
@@ -100,12 +103,18 @@ class Bookmarks(models.Model):
 
 
 class Composition(models.Model):
-    recipe_id = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, blank=True, null=True)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, verbose_name='рецептик')
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, verbose_name='ингредиент')
     volume = models.CharField('количество / вес', max_length=255, blank=True)
     is_required = models.BooleanField('обязательный ингредиент', default=False)
     type_is_required = models.BooleanField('обязательный тип ингредиента', default=False)
 
+    def __str__(self) -> str:
+        return f'{self.recipe_id}, {self.ingredient_id}'
+
     class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['recipe_id', 'ingredient_id'], name='unique_recipeid-ingredientid_composition')
+        ]
         verbose_name = 'состав'
         verbose_name_plural = 'составы'
