@@ -7,6 +7,12 @@ router = routers.DefaultRouter()
 router.register(r'users', views.UserViewSet)
 router.register(r'groups', views.GroupViewSet)
 router.register(r'recipes', views.RecipeViewSet)
+router.register(r'reviews', views.ReviewViewSet)
+router.register(r'recipe-rates', views.RecipeRateViewSet)
+router.register(r'review-rates', views.ReviewRateViewSet)
+router.register(r'bookmarks', views.BookmarksViewSet)
+router.register(r'ingredients', views.IngredientViewSet)
+
 
 urlpatterns = [
     path('', include(router.urls)),
