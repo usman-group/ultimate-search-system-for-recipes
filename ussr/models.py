@@ -128,3 +128,6 @@ class Composition(models.Model):
         ]
         verbose_name = 'состав'
         verbose_name_plural = 'составы'
+
+
+class TypeDish(models.Model):
